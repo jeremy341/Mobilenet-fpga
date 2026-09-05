@@ -1,0 +1,7 @@
+[project]
+name = "mobilenet"
+version = "0.1.0"
+requires-python = ">=3.9"
+dependencies = [
+    "tensorflow>=2.20.0",
+]

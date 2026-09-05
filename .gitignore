@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.pyc
+
+# Environments
+.venv/
+
+# IDE
+.idea/
+.vscode/
+
+# Model/data artifacts (keep .gitkeep placeholders)
+data/*
+models/*
+plots/*
+results/*
+!data/.gitkeep
+!models/.gitkeep
+!plots/.gitkeep
+!results/.gitkeep
+
+# Keras/TFLite caches
+*.h5
+*.keras
+*.tflite
