@@ -13,13 +13,6 @@ __pycache__/
 data/*
 models/*
 plots/*
-results/*
 !data/.gitkeep
 !models/.gitkeep
 !plots/.gitkeep
-!results/.gitkeep
-
-# Keras/TFLite caches
-*.h5
-*.keras
-*.tflite
