@@ -34,3 +34,266 @@ The final comparison should include:
 Both models should use the same dataset, input resolution, train/validation/test split, and comparable training settings so that the comparison is meaningful.
 
 The FPGA implementation is explicitly out of scope.
+
+## Learning roadmap
+
+The project should be learned and implemented in the following order. The goal is not to master all of machine learning before writing code; after the simple CNN stage, coding becomes part of the learning process.
+
+### Phase 1 — Neural-network foundations
+
+Learn:
+
+- Weights and biases
+- Forward pass
+- Loss
+- Gradients and backpropagation at a high level
+- Optimizers and learning rate
+- Batches and epochs
+- Accuracy
+- Training, validation, and test data
+- Overfitting
+
+Resources:
+
+- [3Blue1Brown — But what is a neural network?](https://www.youtube.com/watch?v=aircAruvnKk)
+- [3Blue1Brown — Gradient descent](https://www.3blue1brown.com/lessons/gradient-descent/)
+- [StatQuest video library](https://statquest.org/video_index.html)
+
+The minimum understanding required is:
+
+```text
+Forward pass produces a prediction
+Loss measures the error
+Backpropagation calculates parameter influence
+The optimizer updates the parameters
+```
+
+Backpropagation does not need to be implemented from scratch.
+
+### Phase 2 — Tensors, images, and NumPy
+
+Understand image and batch shapes:
+
+```text
+(128, 128, 3)       one RGB image
+(32, 128, 128, 3)   batch of 32 RGB images
+```
+
+Practice `shape`, `dtype`, `min`, `max`, `mean`, `astype`, indexing, `argmax`, and `expand_dims`.
+
+### Phase 3 — A normal CNN
+
+Build and train a small CNN before MobileNet:
+
+```text
+Image → Conv2D → ReLU → MaxPooling
+      → Conv2D → ReLU → GlobalAveragePooling or Flatten
+      → Dense → Prediction
+```
+
+Learn kernels, filters, feature maps, channels, stride, padding, convolution, pooling, and activation functions.
+
+Resource:
+
+- [TensorFlow CNN tutorial with CIFAR-10](https://www.tensorflow.org/tutorials/images/cnn)
+
+The code should be understood and rewritten rather than copied without understanding.
+
+### Phase 4 — Image-classification workflow
+
+Learn and implement:
+
+```text
+Dataset → train/validation/test split → resize → normalize
+        → batch → shuffle → prefetch → augmentation
+        → train → evaluate → inspect overfitting
+```
+
+Resources:
+
+- [TensorFlow image-classification tutorial](https://www.tensorflow.org/tutorials/images/classification)
+- [TensorFlow image-loading tutorial](https://www.tensorflow.org/tutorials/load_data/images)
+- [TensorFlow data-augmentation tutorial](https://www.tensorflow.org/tutorials/images/data_augmentation)
+
+### Phase 5 — Keras Functional API
+
+Understand inputs, outputs, layer graphs, `keras.Model`, skip connections, and `model.summary()`.
+
+Resource:
+
+- [Keras Functional API guide](https://keras.io/guides/functional_api/)
+
+### Phase 6 — MobileNetV1
+
+Study and understand:
+
+- Standard convolution
+- Depthwise convolution
+- Pointwise `1×1` convolution
+- Depthwise-separable convolution
+- Width multiplier `alpha`
+- Resolution multiplier
+
+Resources:
+
+- [MobileNets paper](https://arxiv.org/abs/1704.04861)
+- [Keras MobileNet documentation](https://keras.io/api/applications/mobilenet/mobilenet_models/)
+
+Implement an educational version using:
+
+```text
+conv_block()
+depthwise_separable_block()
+mobilenet_v1()
+```
+
+Verify output shapes and parameter counts against the official implementation.
+
+### Phase 7 — MobileNetV2
+
+Study and understand:
+
+- Inverted residual blocks
+- Expansion layers
+- Projection layers
+- Linear bottlenecks
+- ReLU6
+- Residual connections
+
+Resources:
+
+- [MobileNetV2 paper](https://arxiv.org/abs/1801.04381)
+- [Keras MobileNetV2 documentation](https://keras.io/api/applications/mobilenet/mobilenet_models/)
+
+Implement an educational version using an inverted-residual block and verify its shapes and parameter count.
+
+### Phase 8 — Dataset selection and training
+
+The final dataset must be confirmed against the assignment requirements. Candidate datasets include:
+
+- [CIFAR-10](https://www.tensorflow.org/datasets/catalog/cifar10) for initial practice
+- [Oxford-IIIT Pet](https://www.tensorflow.org/datasets/catalog/oxford_iiit_pet) for a manageable animal-classification project
+- [Food-101](https://www.tensorflow.org/datasets/catalog/food101) for a larger food-classification project
+- [TensorFlow Datasets catalog](https://www.tensorflow.org/datasets/catalog/overview) for alternatives
+
+Food-101 and animal datasets are valid themes, but the final choice should prioritize balanced classes, sufficient images, clean labels, a defensible split, and available compute. The same dataset and split must be used for V1 and V2.
+
+Train both models with:
+
+```text
+Input: 128×128×3
+alpha: 0.5
+Same preprocessing
+Same train/validation/test split
+Comparable training settings
+```
+
+### Phase 9 — Float32 baseline
+
+Save and measure both Float32 models before quantization:
+
+```text
+mobilenet_v1_float.keras
+mobilenet_v2_float.keras
+mobilenet_v1_float.tflite
+mobilenet_v2_float.tflite
+```
+
+Record accuracy, parameter count, model size, and training settings.
+
+### Phase 10 — INT8 quantization
+
+Learn:
+
+- FP32 versus INT8
+- Signed INT8 range (`-128` to `127`)
+- Scale
+- Zero-point
+- Per-tensor and per-channel quantization
+- INT8 weights and activations
+- INT32 bias and accumulator arithmetic
+
+The basic relationship is:
+
+```text
+real_value = (quantized_value - zero_point) × scale
+```
+
+Resources:
+
+- [LiteRT post-training integer quantization](https://ai.google.dev/edge/litert/models/post_training_integer_quant)
+- [LiteRT 8-bit quantization specification](https://ai.google.dev/edge/litert/performance/quantization_spec)
+- [Keras quantization guides](https://keras.io/guides/)
+
+Use a representative subset of real training images for calibration and force integer-only operators where required.
+
+### Phase 11 — TFLite/LiteRT verification
+
+Create:
+
+```text
+mobilenet_v1_int8.tflite
+mobilenet_v2_int8.tflite
+```
+
+Inspect them with the interpreter:
+
+```text
+allocate_tensors()
+get_input_details()
+get_output_details()
+get_tensor_details()
+set_tensor()
+invoke()
+get_tensor()
+```
+
+Resources:
+
+- [LiteRT Interpreter documentation](https://ai.google.dev/edge/litert/api_docs/python/tf/lite/Interpreter)
+- [Netron](https://netron.app/)
+- [Netron documentation](https://github.com/lutzroeder/netron)
+
+Verify actual input, output, weight, activation, bias, tensor, and operator dtypes. Do not rely on the filename alone.
+
+### Phase 12 — Evaluation and bit-width analysis
+
+Run the same test set through:
+
+```text
+V1 Float32
+V1 INT8
+V2 Float32
+V2 INT8
+```
+
+Compare Float32 accuracy, INT8 accuracy, accuracy loss, model sizes, parameter counts, datatypes, and bit widths.
+
+For bit-width analysis, calculate the required width for INT8×INT8 products and sums of products:
+
+```text
+product = input × weight
+accumulator = Σ(input × weight)
+```
+
+Confirm that all required representations remain at or below 32 bits. FPGA implementation remains out of scope.
+
+## Current project status
+
+Based on the current repository contents:
+
+- [x] V1 and V2 model-builder code exists.
+- [x] Input shape and `alpha=0.5` are configured in the public model-building API.
+- [x] CIFAR-10 loading, resizing, normalization, and train/validation/test splitting exist.
+- [x] Float32 training scripts exist.
+- [x] Saved Float32 `.keras` models exist locally.
+- [x] Quantization code exists.
+- [x] Both quantized `.tflite` files exist locally.
+- [x] Actual TFLite inspection confirms INT8 model inputs and outputs, with INT8 and INT32 tensors present.
+- [x] Accuracy and model-size comparison results are documented.
+- [ ] Netron inspection evidence is not yet recorded in the repository.
+- [ ] The bit-width requirement needs a reproducible calculation, not only a written claim.
+- [ ] The final dataset choice still needs confirmation against the assignment requirements.
+- [ ] The current repository has reported results, but the full result-generation and verification process should be rerun and documented for reproducibility.
+
+Therefore, the core implementation goal is substantially reached, but the project is not yet fully complete as a verified final submission. The remaining work is primarily reproducibility, explicit bit-width analysis, Netron documentation, and confirmation that the implementation exactly matches the intended MobileNet specifications.
