@@ -10,6 +10,7 @@
 ## Models
 - Both use `alpha=0.5` (80-90% parameter reduction vs full MobileNet)
 - Both use `categorical_crossentropy` + `Adam(1e-3)` + `accuracy` metric
+- Kaggle run: maximum 30 epochs with EarlyStopping and ReduceLROnPlateau on a Tesla P100
 - Input: 128×128×3
 
 ### MobileNetV1 (src/models.py: `build_mobilenet_v1`)
@@ -32,12 +33,15 @@
 ## Comparison Results
 | Metric | V1 (Float32) | V1 (INT8) | V2 (Float32) | V2 (INT8) |
 |---|---|---|---|---|
-| Test accuracy | 60.44% | 60.23% | 63.05% | 63.03% |
-| Accuracy change | — | -0.21% | — | -0.02% |
-| Train accuracy | 67.79% | — | 74.39% | — |
-| Val accuracy | 63.52% | — | 63.92% | — |
+| Test accuracy | 76.44% | 76.19% | 78.33% | 78.24% |
+| Accuracy change | — | -0.25 percentage points | — | -0.09 percentage points |
+| Best validation accuracy | 77.30% | — | 79.50% | — |
+| Final training accuracy | ~99.75% | — | ~99.98% | — |
 | Parameters | 835,882 | 835,882 | 605,066 | 605,066 |
-| Model file size | 9.83 MB | 964 KB | 7.44 MB | 826 KB |
+| Keras model size | 10.31 MB | — | 7.81 MB | — |
+| Float32 TFLite size | 3.29 MB | — | 2.35 MB | — |
+| INT8 TFLite size | — | 988 KB | — | 847 KB |
+| Float32-to-INT8 TFLite ratio | — | 3.34× | — | 2.77× |
 
 ## Inspections & Bit Widths
 - **Bit-Width Constraints**: All tensors and operations are constrained to ≤32 bits.
@@ -46,4 +50,6 @@
   - Inputs / Outputs: `int8`
   - Weights & Feature activations: `int8`
   - Accumulators and Biases: `int32`
-- Post-quantization accuracy degradation is minimal (-0.21% for V1, -0.02% for V2) while reducing model storage requirements by ~90%.
+- Post-quantization accuracy degradation is minimal (-0.25 percentage points for V1, -0.09 percentage points for V2).
+- The INT8 TFLite files are approximately 3.34× smaller than Float32 TFLite for V1 and 2.77× smaller for V2.
+- The complete Kaggle outputs are stored locally under `kaggle_results/`.

@@ -291,9 +291,13 @@ Based on the current repository contents:
 - [x] Both quantized `.tflite` files exist locally.
 - [x] Actual TFLite inspection confirms INT8 model inputs and outputs, with INT8 and INT32 tensors present.
 - [x] Accuracy and model-size comparison results are documented.
+- [x] Both models were retrained on Kaggle with a maximum of 30 epochs, early stopping, and learning-rate reduction.
+- [x] Float32 TFLite models were exported and compared against INT8 TFLite models.
+- [x] Final Kaggle results and machine-readable TFLite inspections were generated.
 - [ ] Netron inspection evidence is not yet recorded in the repository.
 - [ ] The bit-width requirement needs a reproducible calculation, not only a written claim.
-- [ ] The final dataset choice still needs confirmation against the assignment requirements.
-- [ ] The current repository has reported results, but the full result-generation and verification process should be rerun and documented for reproducibility.
+- [x] CIFAR-10 is confirmed as an allowed dataset.
+- [ ] The final result artifacts from Kaggle still need to be copied into the canonical repository locations if they are to replace the earlier local artifacts.
+- [ ] The final result-generation process should be documented fully for reproducibility.
 
-Therefore, the core implementation goal is substantially reached, but the project is not yet fully complete as a verified final submission. The remaining work is primarily reproducibility, explicit bit-width analysis, Netron documentation, and confirmation that the implementation exactly matches the intended MobileNet specifications.
+Therefore, the core implementation and a longer Kaggle experiment are complete, but the project is not yet fully complete as a verified final submission. The remaining work is primarily reproducibility, explicit bit-width analysis, Netron documentation, replacing or clearly separating old local artifacts, and confirmation that the implementation exactly matches the intended MobileNet specifications.

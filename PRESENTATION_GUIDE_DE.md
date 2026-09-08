@@ -429,12 +429,15 @@ Die bisher dokumentierten Werte:
 
 | Messgröße | V1 Float32 | V1 INT8 | V2 Float32 | V2 INT8 |
 |---|---:|---:|---:|---:|
-| Test Accuracy | 60,44 % | 60,23 % | 63,05 % | 63,03 % |
-| Accuracy-Änderung | — | −0,21 Prozentpunkte | — | −0,02 Prozentpunkte |
+| Test Accuracy | 76,44 % | 76,19 % | 78,33 % | 78,24 % |
+| Accuracy-Änderung | — | −0,25 Prozentpunkte | — | −0,09 Prozentpunkte |
 | Keras-Parameter | 835.882 | 835.882 | 605.066 | 605.066 |
-| Dateigröße | 9,83 MB | 964 KB | 7,44 MB | 826 KB |
+| Keras-Dateigröße | 10,31 MB | — | 7,81 MB | — |
+| Float32-TFLite-Größe | 3,29 MB | — | 2,35 MB | — |
+| INT8-TFLite-Größe | — | 988 KB | — | 847 KB |
+| Float32-zu-INT8-TFLite-Verhältnis | — | 3,34× | — | 2,77× |
 
-Interpretation: V2 ist in diesem Versuch genauer und besitzt weniger Keras-Parameter. INT8 erzeugt nur geringen Accuracy-Verlust und reduziert die Datei deutlich.
+Interpretation: V2 ist in diesem Versuch genauer und besitzt weniger Keras-Parameter. INT8 erzeugt nur geringen Accuracy-Verlust und reduziert die TFLite-Datei deutlich. Die Modelle wurden mit maximal 30 Epochs, Early Stopping und Learning-Rate-Reduktion auf einer Kaggle-Tesla-P100 trainiert.
 
 Keras und Netron können verschiedene Parameterzahlen anzeigen, weil BatchNormalization beim Export gefaltet wird und die Formate unterschiedlich zählen. Keras gegen TFLite ist außerdem kein vollständig formatgleicher Größenvergleich; Float32-TFLite gegen INT8-TFLite wäre strenger.
 
@@ -460,13 +463,13 @@ Die finale Dokumentation sollte die maximale Summe und die dafür notwendige sig
 
 ## 18. Was du als Einschränkungen nennen solltest
 
-1. Die bisherigen Werte stammen aus fünf Epochs.
+1. Die ursprünglichen Werte stammen aus fünf Epochs; die aktuellen Werte stammen aus einem längeren Kaggle-Experiment.
 2. Die erste Convolution wird derzeit nicht mit alpha skaliert.
 3. Keras und Netron verwenden möglicherweise verschiedene Parameterzählungen.
 4. Die bisherige Größenmessung nutzt unterschiedliche Dateiformate.
 5. Die Bitbreitenanalyse braucht noch eine explizite Worst-Case-Rechnung.
 6. Netron-Befunde sollten noch in results dokumentiert werden.
-7. CIFAR-10 ist der aktuelle Entwicklungsdatensatz; ein endgültiger Datensatz muss mit der Aufgabenstellung abgestimmt werden.
+7. CIFAR-10 ist als Dataset erlaubt; die verwendete Dataset- und Trainingskonfiguration muss trotzdem exakt dokumentiert werden.
 
 ## 19. Typische Fragen
 
@@ -520,4 +523,3 @@ Warum kein FPGA? Die Aufgabe verlangt Analyse, aber ausdrücklich keine FPGA-Imp
 ## 21. Abschluss
 
 > MobileNetV1 reduziert Rechenaufwand mit Depthwise-Separable-Convolutions. MobileNetV2 erweitert das Konzept um Inverted Residuals und Linear Bottlenecks. In meinem aktuellen Versuch ist V2 genauer und besitzt weniger Keras-Parameter. INT8 macht die Modelle deutlich kompakter, während die Accuracy nur geringfügig sinkt. Netron bestätigt INT8-Inputs, INT8-Gewichte, INT8-Aktivierungen und INT32-Bias-Tensoren. Die Werte sind vorläufig, weil nur fünf Epochs verwendet wurden und die exakte Anwendung von alpha auf die erste Convolution noch geprüft werden muss.
-

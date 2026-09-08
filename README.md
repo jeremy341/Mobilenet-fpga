@@ -31,8 +31,9 @@ The current experiment uses CIFAR-10:
 - 10,000 test images
 - Original images resized from `32×32×3` to `128×128×3`
 - Pixel values normalized to `[0, 1]`
-- Adam optimizer with learning rate `1e-3`
-- Five training epochs
+- Adam optimizer with initial learning rate `1e-3`
+- Maximum 30 epochs with early stopping and learning-rate reduction
+- Kaggle NVIDIA Tesla P100
 
 The dataset can be changed later after confirming the assignment requirements. Candidate alternatives and selection criteria are listed in [PROJECT_AIMS.md](PROJECT_AIMS.md).
 
@@ -70,12 +71,15 @@ The currently recorded results are:
 
 | Metric | V1 Float32 | V1 INT8 | V2 Float32 | V2 INT8 |
 |---|---:|---:|---:|---:|
-| Test accuracy | 60.44% | 60.23% | 63.05% | 63.03% |
-| Accuracy change | — | -0.21% | — | -0.02% |
+| Test accuracy | 76.44% | 76.19% | 78.33% | 78.24% |
+| Accuracy change | — | -0.25 percentage points | — | -0.09 percentage points |
 | Parameters | 835,882 | 835,882 | 605,066 | 605,066 |
-| Model size | 9.83 MB | 964 KB | 7.44 MB | 826 KB |
+| Keras model size | 10.31 MB | — | 7.81 MB | — |
+| Float32 TFLite size | 3.29 MB | — | 2.35 MB | — |
+| INT8 TFLite size | — | 988 KB | — | 847 KB |
+| Float32-to-INT8 TFLite ratio | — | 3.34× | — | 2.77× |
 
-Detailed results are available in [results/comparison.md](results/comparison.md). These values should be reproducible by rerunning the training, quantization, and evaluation scripts before being treated as final submission results.
+Detailed results are available in [results/comparison.md](results/comparison.md). The current values come from the Kaggle run and use the best validation checkpoints.
 
 ## Repository structure
 
