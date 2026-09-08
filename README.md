@@ -6,6 +6,8 @@ The project investigates how two lightweight CNN architectures compare before an
 
 The complete specification and learning roadmap are documented in [PROJECT_AIMS.md](PROJECT_AIMS.md).
 
+For the German presentation explanation, see [PRESENTATION_GUIDE_DE.md](PRESENTATION_GUIDE_DE.md).
+
 ## Project requirements
 
 | Requirement | MobileNetV1 | MobileNetV2 |
