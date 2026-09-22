@@ -283,7 +283,7 @@ Confirm that all required representations remain at or below 32 bits. FPGA imple
 Based on the current repository contents:
 
 - [x] V1 and V2 model-builder code exists.
-- [x] Input shape and `alpha=0.5` are configured in the public model-building API.
+- [x] Input shape and `alpha=0.5` are applied to the initial convolution and later width-controlled stages in the model builders.
 - [x] CIFAR-10 loading, resizing, normalization, and train/validation/test splitting exist.
 - [x] Float32 training scripts exist.
 - [x] Saved Float32 `.keras` models exist locally.
@@ -294,10 +294,10 @@ Based on the current repository contents:
 - [x] Both models were retrained on Kaggle with a maximum of 30 epochs, early stopping, and learning-rate reduction.
 - [x] Float32 TFLite models were exported and compared against INT8 TFLite models.
 - [x] Final Kaggle results and machine-readable TFLite inspections were generated.
-- [ ] Netron inspection evidence is not yet recorded in the repository.
-- [ ] The bit-width requirement needs a reproducible calculation, not only a written claim.
+- [ ] Netron inspection evidence is not yet recorded in the repository for the corrected final artifacts.
+- [x] A reproducible theoretical bit-width calculation is recorded in `results/bit_width_analysis.md`.
 - [x] CIFAR-10 is confirmed as an allowed dataset.
-- [ ] The final result artifacts from Kaggle still need to be copied into the canonical repository locations if they are to replace the earlier local artifacts.
+- [ ] The corrected architecture still needs new Kaggle result artifacts; the existing Kaggle and canonical artifacts were generated before the initial-convolution alpha correction.
 - [ ] The final result-generation process should be documented fully for reproducibility.
 
 Therefore, the core implementation and a longer Kaggle experiment are complete, but the project is not yet fully complete as a verified final submission. The remaining work is primarily reproducibility, explicit bit-width analysis, Netron documentation, replacing or clearly separating old local artifacts, and confirmation that the implementation exactly matches the intended MobileNet specifications.

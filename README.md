@@ -169,7 +169,7 @@ The core implementation and initial experiment are present. Before calling the p
 - Record the exact training configuration and random seeds.
 - Inspect both INT8 files in Netron and save the relevant observations.
 - Add a reproducible accumulator and required-bit-width calculation.
-- Confirm that the current architecture matches the intended MobileNet specifications, especially the placement of the width multiplier.
+- Confirm that the corrected architecture and its newly retrained artifacts match the intended MobileNet specifications.
 - Confirm the final dataset with the assignment supervisor.
 
 The project does not include, and does not require, an FPGA implementation.

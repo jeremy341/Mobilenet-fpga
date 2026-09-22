@@ -323,7 +323,7 @@ filters = int(filters * alpha)
 
 Beispiel: 256 Kanäle werden zu 128. Das reduziert meist Parameter, Speicher und Rechenaufwand, kann aber Accuracy kosten.
 
-Bekannte Abweichung: Die initiale Conv2D ist aktuell fest auf 32 Filter gesetzt und wird nicht mit alpha multipliziert. Netron zeigt deshalb einen Filter mit Shape int8[32,3,3,3]. Für eine streng kanonische alpha=0.5-Implementierung muss geprüft werden, ob dort 16 Filter verlangt werden.
+Die initiale Conv2D wird jetzt ebenfalls mit alpha multipliziert. Bei alpha=0.5 besitzt sie 16 Filter. Die bisherigen Kaggle-Artefakte wurden jedoch vor dieser Korrektur erzeugt und müssen deshalb neu trainiert und neu quantisiert werden.
 
 ## 11. Training
 
@@ -464,10 +464,10 @@ Die finale Dokumentation sollte die maximale Summe und die dafür notwendige sig
 ## 18. Was du als Einschränkungen nennen solltest
 
 1. Die ursprünglichen Werte stammen aus fünf Epochs; die aktuellen Werte stammen aus einem längeren Kaggle-Experiment.
-2. Die erste Convolution wird derzeit nicht mit alpha skaliert.
+2. Die korrigierte erste Convolution verwendet jetzt 16 Filter bei alpha=0.5; die bisherigen Kaggle-Ergebnisse stammen noch aus der vorherigen 32-Filter-Version.
 3. Keras und Netron verwenden möglicherweise verschiedene Parameterzählungen.
 4. Die bisherige Größenmessung nutzt unterschiedliche Dateiformate.
-5. Die Bitbreitenanalyse braucht noch eine explizite Worst-Case-Rechnung.
+5. Die Bitbreitenanalyse ist jetzt als theoretische Worst-Case-Rechnung in results/bit_width_analysis.md dokumentiert.
 6. Netron-Befunde sollten noch in results dokumentiert werden.
 7. CIFAR-10 ist als Dataset erlaubt; die verwendete Dataset- und Trainingskonfiguration muss trotzdem exakt dokumentiert werden.
 
