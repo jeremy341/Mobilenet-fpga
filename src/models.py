@@ -13,7 +13,7 @@ def _depthwise_block(x, filters, stride):
 
 def build_mobilenet_v1(alpha=0.5, input_shape=(128, 128, 3)):
     inputs = tf.keras.Input(shape=input_shape)
-    x = tf.keras.layers.Conv2D(32, 3, strides=2, padding="same", use_bias=False)(inputs)
+    x = tf.keras.layers.Conv2D(int(32 * alpha), 3, strides=2, padding="same", use_bias=False)(inputs)
     x = tf.keras.layers.BatchNormalization()(x)
     x = tf.keras.layers.ReLU()(x)
 
@@ -72,7 +72,7 @@ def _inverted_residual_block(x, filters, stride, expand_ratio=6):
 
 def build_mobilenet_v2(alpha=0.5, input_shape=(128, 128, 3)):
     inputs = tf.keras.Input(shape=input_shape)
-    x = tf.keras.layers.Conv2D(32, 3, strides=2, padding="same", use_bias=False)(inputs)
+    x = tf.keras.layers.Conv2D(int(32 * alpha), 3, strides=2, padding="same", use_bias=False)(inputs)
     x = tf.keras.layers.BatchNormalization()(x)
     x = tf.keras.layers.ReLU(6.0)(x)
 
