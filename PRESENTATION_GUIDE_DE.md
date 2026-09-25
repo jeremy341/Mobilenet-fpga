@@ -162,7 +162,7 @@ Erstellt das Dataset, shuffelt nur Training, bildet Batches, verarbeitet Beispie
 
 Conv2D wendet gelernte Filter an. Ein Filter erkennt lokale Muster wie Kanten oder Texturen. Frühe Layer lernen einfache Muster; tiefere Layer kombinieren sie zu Formen.
 
-Conv2D(32, 3, strides=2, padding="same") bedeutet 32 Filter, Kernel 3×3, Stride 2 und Rand-Padding. Dadurch wird 128×128 ungefähr zu 64×64 und die Ausgabe besitzt 32 Kanäle.
+Eine Conv2D mit Kernel 3×3, Stride 2 und `same`-Padding halbiert ungefähr die räumliche Auflösung. In diesen Modellen wird der Stem mit `int(32 * alpha)` Filtern gebaut; bei alpha=0.5 sind das 16 Kanäle.
 
 BatchNormalization stabilisiert Aktivierungen und besitzt lernbare Skalierung und Verschiebung. Deshalb wird bei Convolutions häufig use_bias=False gesetzt.
 
@@ -224,7 +224,7 @@ Pointwise-Convolution, Normalisierung, ReLU und Rückgabe des Blocks.
 
 ### V1-Modell
 
-Der Input wird durch eine normale initiale Convolution von 128×128×3 auf 64×64×32 gebracht. Danach folgen 13 Depthwise-Separable-Blöcke.
+Der Input wird durch die initiale Convolution von 128×128×3 auf 64×64×16 gebracht. Danach folgen 13 Depthwise-Separable-Blöcke.
 
 Die Liste blocks enthält Tupel:
 
@@ -238,6 +238,7 @@ Der räumliche Verlauf ist:
 
 ~~~text
 128×128×3
+→ Stem: 64×64×16
 → 64×64×32
 → 64×64×32
 → 32×32×64
@@ -290,7 +291,7 @@ Der räumliche Verlauf ist ungefähr:
 
 ~~~text
 128×128×3
-→ 64×64×32
+→ Stem: 64×64×16
 → 64×64×8
 → 32×32×12
 → 16×16×16
@@ -323,7 +324,7 @@ filters = int(filters * alpha)
 
 Beispiel: 256 Kanäle werden zu 128. Das reduziert meist Parameter, Speicher und Rechenaufwand, kann aber Accuracy kosten.
 
-Die initiale Conv2D wird jetzt ebenfalls mit alpha multipliziert. Bei alpha=0.5 besitzt sie 16 Filter. Die bisherigen Kaggle-Artefakte wurden jedoch vor dieser Korrektur erzeugt und müssen deshalb neu trainiert und neu quantisiert werden.
+Die initiale Conv2D wird ebenfalls mit alpha multipliziert. Bei alpha=0.5 besitzt sie 16 Filter. Die korrigierten Kaggle-Artefakte und die Standarddateien im Repository stammen aus dieser Architektur.
 
 ## 11. Training
 
@@ -333,11 +334,11 @@ ROOT findet mit Path(__file__).resolve().parent.parent das Projektverzeichnis. M
 
 load_data lädt die Splits. make_dataset erzeugt Training und Validation. Die Testdaten werden beim Training bewusst nicht verwendet.
 
-build_mobilenet_v1 beziehungsweise build_mobilenet_v2 erzeugt das Modell. model.fit trainiert mit Training-Dataset, prüft nach jeder Epoch auf Validation und verwendet aktuell fünf Epochs.
+build_mobilenet_v1 beziehungsweise build_mobilenet_v2 erzeugt das Modell. model.fit trainiert maximal 30 Epochs und prüft nach jeder Epoch auf Validation. EarlyStopping überwacht val_accuracy mit patience 7 und stellt die besten Weights wieder her. ReduceLROnPlateau überwacht val_loss, reduziert die Learning Rate um den Faktor 0.2 und verwendet patience 3 sowie eine minimale Learning Rate von 1e-6.
 
 MODELS_DIR.mkdir legt den Speicherordner an. model.save schreibt die Float32-Datei mobilenet_v1.keras beziehungsweise mobilenet_v2.keras.
 
-Für ein endgültiges Ergebnis wären eher 30–50 maximale Epochs, Early Stopping und Learning-Rate-Reduktion sinnvoll. Beide Modelle müssen dabei gleich behandelt werden.
+Beide Modelle verwenden dieselbe Konfiguration. Seed 67 wird für Python, NumPy und TensorFlow gesetzt.
 
 ## 12. src/quantize.py
 
@@ -370,7 +371,7 @@ INT8 Input × INT8 Weight
 → INT8 Output
 ~~~
 
-INT32 wird benötigt, weil bereits 127×127=16129 ist und viele Produkte addiert werden.
+LiteRT quantisiert Conv-Gewichte symmetrisch in `[-127,127]`, während Aktivierungen `[-128,127]` nutzen. Daher ist ein konservativer maximaler Produktbetrag `128×127=16256`. Viele solcher Produkte werden addiert; die konkrete Bitbreitenrechnung ist in `results/bit_width_analysis.md` dokumentiert.
 
 ## 14. src/evaluate.py
 
@@ -390,38 +391,31 @@ korrekte Predictions / Anzahl Testbilder
 
 ## 15. Netron-Befunde
 
-Für V1 zeigte Netron:
+Die korrigierten Dateien wurden in Netron geprüft. Beide zeigen:
 
 ~~~text
 Input:  int8[-1,128,128,3]
 Output: int8[-1,10]
+Stem-Filter: int8[16,3,3,3]
+Stem-Bias:   int32[16]
 ~~~
 
-Die Layerfolge war:
+Damit bestätigt der Graph die alpha-scalierte 16-Filter-Stem-Convolution.
+
+V1 zeigt eine initiale Conv2D, danach DepthwiseConv2D/Pointwise-Conv2D-Paare, anschließend Mean, FullyConnected und Softmax. Die finale Classifier-Matrix ist `int8[10,512]`, der Bias `int32[10]`. Netron meldet 818.252 Inference-Graph-Parameter.
+
+V2 zeigt Expansion-Conv2D, DepthwiseConv2D, lineare Projection-Conv2D und zehn Add-Nodes für Residual Connections. Die Expansion erreicht je nach Stage 48, 72, 96, 192, 288 oder 480 Kanäle; die finale Feature-Convolution besitzt 640 Kanäle. Die Classifier-Matrix ist `int8[10,640]`, der Bias `int32[10]`. Netron meldet 578.652 Inference-Graph-Parameter.
+
+Beide Modelle enthalten INT8- und INT32-Tensoren. Die Graph Properties zeigen:
 
 ~~~text
-Conv2D
-→ DepthwiseConv2D
-→ Conv2D 1×1
-→ DepthwiseConv2D
-→ ...
-→ Mean
-→ FullyConnected
-→ Softmax
+Input:  0.003921568859368563 × (q + 128)
+Output: 0.00390625 × (q + 128)
 ~~~
 
-Beispiele:
+Das entspricht Input scale `1/255`, Input zero-point `-128`, Output scale `1/256` und Output zero-point `-128`. Die Interpreter-Zählung lautet für V1 59 INT8/29 INT32-Tensoren und für V2 119 INT8/54 INT32-Tensoren. Ausführliche Shapes und Eigenschaften stehen in `results/netron_inspection.md`.
 
-~~~text
-Filter: int8[32,3,3,3]
-Bias:   int32[32]
-Final weights: int8[10,512]
-Final bias:    int32[10]
-~~~
-
-Die Input-Quantisierung wurde ungefähr als 0.003921568859368563 × (q + 128) angezeigt. Das entspricht scale ungefähr 1/255 und zero_point -128.
-
-In Netron prüft man zuerst Graph Properties, dann einzelne Operatoren und Tensoren. Man klickt eine Conv2D, eine DepthwiseConv2D, einen Filter, einen Bias und den Classifier an. Entscheidend ist, die tatsächlichen Tensor-Datentypen zu lesen, nicht nur den Dateinamen.
+Keras und Netron Parameterzahlen sind verschieden: Keras zählt das trainierbare Modell, Netron das konvertierte Inference-Graph. Die Conversions falten BatchNormalization und Konstanten in die Inference-Operationen. Für den Architekturvergleich verwende ich durchgehend die Keras-Parameterzahlen.
 
 ## 16. Ergebnisse
 
@@ -429,17 +423,17 @@ Die bisher dokumentierten Werte:
 
 | Messgröße | V1 Float32 | V1 INT8 | V2 Float32 | V2 INT8 |
 |---|---:|---:|---:|---:|
-| Test Accuracy | 76,44 % | 76,19 % | 78,33 % | 78,24 % |
-| Accuracy-Änderung | — | −0,25 Prozentpunkte | — | −0,09 Prozentpunkte |
-| Keras-Parameter | 835.882 | 835.882 | 605.066 | 605.066 |
-| Keras-Dateigröße | 10,31 MB | — | 7,81 MB | — |
+| Test Accuracy | 76,72 % | 76,35 % | 77,93 % | 77,94 % |
+| Accuracy-Änderung | — | −0,37 Prozentpunkte | — | +0,01 Prozentpunkte |
+| Keras-Parameter | 834.666 | 834.666 | 604.234 | 604.234 |
+| Keras-Dateigröße | 10,30 MB | — | 7,80 MB | — |
 | Float32-TFLite-Größe | 3,29 MB | — | 2,35 MB | — |
-| INT8-TFLite-Größe | — | 988 KB | — | 847 KB |
-| Float32-zu-INT8-TFLite-Verhältnis | — | 3,34× | — | 2,77× |
+| INT8-TFLite-Größe | — | 986 KB | — | 845 KB |
+| Float32-zu-INT8-TFLite-Reduktion | — | 70,04 % (3,34×) | — | 63,97 % (2,78×) |
 
-Interpretation: V2 ist in diesem Versuch genauer und besitzt weniger Keras-Parameter. INT8 erzeugt nur geringen Accuracy-Verlust und reduziert die TFLite-Datei deutlich. Die Modelle wurden mit maximal 30 Epochs, Early Stopping und Learning-Rate-Reduktion auf einer Kaggle-Tesla-P100 trainiert.
+Interpretation: V2 ist in diesem Versuch genauer und besitzt 27,61 % weniger Keras-Parameter. V1 verliert durch INT8 0,37 Prozentpunkte. V2 liegt im Test um 0,01 Punkte höher als Float32; das entspricht genau einer zusätzlichen richtigen Vorhersage von 10.000 Testbildern. Beide INT8-Dateien sind deutlich kleiner als ihre Float32-TFLite-Versionen. Trainiert wurde auf einer Kaggle-Tesla-P100 mit maximal 30 Epochs, Early Stopping und Learning-Rate-Reduktion.
 
-Keras und Netron können verschiedene Parameterzahlen anzeigen, weil BatchNormalization beim Export gefaltet wird und die Formate unterschiedlich zählen. Keras gegen TFLite ist außerdem kein vollständig formatgleicher Größenvergleich; Float32-TFLite gegen INT8-TFLite wäre strenger.
+Keras zählt 834.666 V1- und 604.234 V2-Parameter. Netron meldet 818.252 beziehungsweise 578.652 Parameter im exportierten Inference-Graph. Die Größenmessung vergleicht hier formatgleiche Float32-TFLite- und INT8-TFLite-Dateien.
 
 ## 17. Bitbreitenanalyse
 
@@ -459,17 +453,14 @@ Accumulator: INT32
 Output: INT8
 ~~~
 
-Die finale Dokumentation sollte die maximale Summe und die dafür notwendige signed Bitbreite reproduzierbar berechnen und zeigen, dass sie höchstens 32 Bit benötigt.
+Die Worst-Case-Rechnung steht in `results/bit_width_analysis.md`. Sie verwendet die LiteRT-Ranges für INT8-Aktivierungen und symmetrische INT8-Gewichte. Die größte betrachtete Summe ist 10.403.840 und benötigt 25 signed Bits; Bias-Tensoren sind INT32.
 
 ## 18. Was du als Einschränkungen nennen solltest
 
-1. Die ursprünglichen Werte stammen aus fünf Epochs; die aktuellen Werte stammen aus einem längeren Kaggle-Experiment.
-2. Die korrigierte erste Convolution verwendet jetzt 16 Filter bei alpha=0.5; die bisherigen Kaggle-Ergebnisse stammen noch aus der vorherigen 32-Filter-Version.
-3. Keras und Netron verwenden möglicherweise verschiedene Parameterzählungen.
-4. Die bisherige Größenmessung nutzt unterschiedliche Dateiformate.
-5. Die Bitbreitenanalyse ist jetzt als theoretische Worst-Case-Rechnung in results/bit_width_analysis.md dokumentiert.
-6. Netron-Befunde sollten noch in results dokumentiert werden.
-7. CIFAR-10 ist als Dataset erlaubt; die verwendete Dataset- und Trainingskonfiguration muss trotzdem exakt dokumentiert werden.
+1. Die Trainingshistorien zeigen Overfitting: Trainingsgenauigkeit nähert sich 100 %, während die Validation früher stagniert.
+2. Keras und Netron zählen Parameter in unterschiedlichen Modellrepräsentationen.
+3. Die Kaggle-Ausgabe enthält keine Python-/TensorFlow-Versionsmetadaten; diese Laufzeitversionen daher nicht behaupten.
+4. Die Bitbreitenrechnung ist eine theoretische Worst-Case-Abschätzung nach der LiteRT-Gewichts- und Aktivierungsrange.
 
 ## 19. Typische Fragen
 
@@ -522,4 +513,4 @@ Warum kein FPGA? Die Aufgabe verlangt Analyse, aber ausdrücklich keine FPGA-Imp
 
 ## 21. Abschluss
 
-> MobileNetV1 reduziert Rechenaufwand mit Depthwise-Separable-Convolutions. MobileNetV2 erweitert das Konzept um Inverted Residuals und Linear Bottlenecks. In meinem aktuellen Versuch ist V2 genauer und besitzt weniger Keras-Parameter. INT8 macht die Modelle deutlich kompakter, während die Accuracy nur geringfügig sinkt. Netron bestätigt INT8-Inputs, INT8-Gewichte, INT8-Aktivierungen und INT32-Bias-Tensoren. Die Werte sind vorläufig, weil nur fünf Epochs verwendet wurden und die exakte Anwendung von alpha auf die erste Convolution noch geprüft werden muss.
+> MobileNetV1 reduziert Rechenaufwand mit Depthwise-Separable-Convolutions. MobileNetV2 ergänzt Inverted Residuals und Linear Bottlenecks. Im korrigierten alpha=0.5-Lauf erreicht V2 77,93 % Float32- und 77,94 % INT8-Testgenauigkeit bei 604.234 Keras-Parametern; V1 erreicht 76,72 % und 76,35 % bei 834.666 Parametern. Netron bestätigt für beide den 16-Filter-Stem sowie INT8-Inputs/Gewichte/Aktivierungen und INT32-Bias-Tensoren. Die INT8-Dateien sind 70,04 % (V1) beziehungsweise 63,97 % (V2) kleiner als Float32-TFLite. Die Trainingskurven zeigen Overfitting, das ich bei der Interpretation berücksichtige.

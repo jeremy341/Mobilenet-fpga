@@ -1,0 +1,26 @@
+[
+  {
+    "model": "mobilenet_v1",
+    "parameters": 834666,
+    "float32_keras_accuracy": 0.7671999931335449,
+    "float32_tflite_accuracy": 0.7672,
+    "int8_accuracy": 0.7635,
+    "accuracy_loss": 0.0036999931335449654,
+    "keras_size_bytes": 10297401,
+    "float32_tflite_size_bytes": 3290072,
+    "int8_tflite_size_bytes": 985568,
+    "int8_compression_ratio": 3.338249618494107
+  },
+  {
+    "model": "mobilenet_v2",
+    "parameters": 604234,
+    "float32_keras_accuracy": 0.7792999744415283,
+    "float32_tflite_accuracy": 0.7793,
+    "int8_accuracy": 0.7794,
+    "accuracy_loss": -0.00010002555847166139,
+    "keras_size_bytes": 7796765,
+    "float32_tflite_size_bytes": 2346032,
+    "int8_tflite_size_bytes": 845224,
+    "int8_compression_ratio": 2.7756334415492225
+  }
+]

@@ -169,14 +169,14 @@ Implement an educational version using an inverted-residual block and verify its
 
 ### Phase 8 — Dataset selection and training
 
-The final dataset must be confirmed against the assignment requirements. Candidate datasets include:
+The selected and permitted project dataset is CIFAR-10. Candidate alternatives considered during planning were:
 
 - [CIFAR-10](https://www.tensorflow.org/datasets/catalog/cifar10) for initial practice
 - [Oxford-IIIT Pet](https://www.tensorflow.org/datasets/catalog/oxford_iiit_pet) for a manageable animal-classification project
 - [Food-101](https://www.tensorflow.org/datasets/catalog/food101) for a larger food-classification project
 - [TensorFlow Datasets catalog](https://www.tensorflow.org/datasets/catalog/overview) for alternatives
 
-Food-101 and animal datasets are valid themes, but the final choice should prioritize balanced classes, sufficient images, clean labels, a defensible split, and available compute. The same dataset and split must be used for V1 and V2.
+The same CIFAR-10 split and preprocessing are used for V1 and V2.
 
 Train both models with:
 
@@ -294,10 +294,11 @@ Based on the current repository contents:
 - [x] Both models were retrained on Kaggle with a maximum of 30 epochs, early stopping, and learning-rate reduction.
 - [x] Float32 TFLite models were exported and compared against INT8 TFLite models.
 - [x] Final Kaggle results and machine-readable TFLite inspections were generated.
-- [ ] Netron inspection evidence is not yet recorded in the repository for the corrected final artifacts.
+- [x] Corrected V1 and V2 INT8 artifacts were inspected in Netron and documented in `results/netron_inspection.md`.
 - [x] A reproducible theoretical bit-width calculation is recorded in `results/bit_width_analysis.md`.
 - [x] CIFAR-10 is confirmed as an allowed dataset.
-- [ ] The corrected architecture still needs new Kaggle result artifacts; the existing Kaggle and canonical artifacts were generated before the initial-convolution alpha correction.
-- [ ] The final result-generation process should be documented fully for reproducibility.
+- [x] Corrected Keras, Float32 TFLite, and INT8 TFLite artifacts replace the older files in the canonical local folders.
+- [x] Training settings, seed, histories, comparison metrics, Netron findings, bit-width calculations, and datatype inspection are documented.
+- [ ] Record Kaggle Python and TensorFlow version metadata if it can be retrieved from the notebook session.
 
-Therefore, the core implementation and a longer Kaggle experiment are complete, but the project is not yet fully complete as a verified final submission. The remaining work is primarily reproducibility, explicit bit-width analysis, Netron documentation, replacing or clearly separating old local artifacts, and confirmation that the implementation exactly matches the intended MobileNet specifications.
+Therefore, the required model, quantization, comparison, Netron, and bit-width work is complete in the local project. The only remaining reproducibility detail is Kaggle runtime-version metadata, if available; FPGA implementation remains out of scope.

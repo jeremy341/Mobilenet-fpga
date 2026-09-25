@@ -1,0 +1,56 @@
+{
+  "mobilenet_v1": {
+    "input_dtype": "<class 'numpy.int8'>",
+    "input_shape": [
+      1,
+      128,
+      128,
+      3
+    ],
+    "input_quantization": [
+      0.003921568859368563,
+      -128
+    ],
+    "output_dtype": "<class 'numpy.int8'>",
+    "output_shape": [
+      1,
+      10
+    ],
+    "output_quantization": [
+      0.00390625,
+      -128
+    ],
+    "tensor_dtype_counts": {
+      "<class 'numpy.int8'>": 59,
+      "<class 'numpy.int32'>": 29
+    },
+    "tensor_count": 88
+  },
+  "mobilenet_v2": {
+    "input_dtype": "<class 'numpy.int8'>",
+    "input_shape": [
+      1,
+      128,
+      128,
+      3
+    ],
+    "input_quantization": [
+      0.003921568859368563,
+      -128
+    ],
+    "output_dtype": "<class 'numpy.int8'>",
+    "output_shape": [
+      1,
+      10
+    ],
+    "output_quantization": [
+      0.00390625,
+      -128
+    ],
+    "tensor_dtype_counts": {
+      "<class 'numpy.int8'>": 119,
+      "<class 'numpy.int32'>": 54
+    },
+    "tensor_count": 173
+  }
+}

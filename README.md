@@ -35,7 +35,7 @@ The current experiment uses CIFAR-10:
 - Maximum 30 epochs with early stopping and learning-rate reduction
 - Kaggle NVIDIA Tesla P100
 
-The dataset can be changed later after confirming the assignment requirements. Candidate alternatives and selection criteria are listed in [PROJECT_AIMS.md](PROJECT_AIMS.md).
+CIFAR-10 is confirmed as an allowed dataset for this project. Both models use the same split and preprocessing.
 
 ## Architecture summary
 
@@ -65,21 +65,23 @@ MobileNetV2 is built from inverted residual blocks with linear bottlenecks:
 
 The models are implemented directly in `src/models.py` for learning and inspection rather than using only `keras.applications` as a black box.
 
+At `alpha=0.5`, the initial 32-filter convolution is also scaled to 16 filters in both models.
+
 ## Current results
 
 The currently recorded results are:
 
 | Metric | V1 Float32 | V1 INT8 | V2 Float32 | V2 INT8 |
 |---|---:|---:|---:|---:|
-| Test accuracy | 76.44% | 76.19% | 78.33% | 78.24% |
-| Accuracy change | — | -0.25 percentage points | — | -0.09 percentage points |
-| Parameters | 835,882 | 835,882 | 605,066 | 605,066 |
-| Keras model size | 10.31 MB | — | 7.81 MB | — |
+| Test accuracy | 76.72% | 76.35% | 77.93% | 77.94% |
+| Accuracy change | — | -0.37 percentage points | — | +0.01 percentage points |
+| Parameters | 834,666 | 834,666 | 604,234 | 604,234 |
+| Keras model size | 10.30 MB | — | 7.80 MB | — |
 | Float32 TFLite size | 3.29 MB | — | 2.35 MB | — |
-| INT8 TFLite size | — | 988 KB | — | 847 KB |
-| Float32-to-INT8 TFLite ratio | — | 3.34× | — | 2.77× |
+| INT8 TFLite size | — | 986 KB | — | 845 KB |
+| Float32-to-INT8 TFLite reduction | — | 70.04% (3.34× smaller) | — | 63.97% (2.78× smaller) |
 
-Detailed results are available in [results/comparison.md](results/comparison.md). The current values come from the Kaggle run and use the best validation checkpoints.
+Detailed results are in [results/comparison.md](results/comparison.md), with [Netron findings](results/netron_inspection.md) and the [bit-width calculation](results/bit_width_analysis.md). These corrected results use the alpha-scaled 16-filter initial convolution and best-validation checkpoints. V1 loses 0.37 percentage points after quantization. V2 is 0.01 points higher in INT8, a difference of one image among 10,000 test images. The training histories show overfitting: training accuracy approaches 100% while validation accuracy plateaus.
 
 ## Repository structure
 
@@ -93,7 +95,13 @@ Detailed results are available in [results/comparison.md](results/comparison.md)
 │   ├── quantize.py      # Full INT8 TFLite conversion
 │   └── evaluate.py      # Float32 and INT8 evaluation
 ├── results/
-│   └── comparison.md    # Recorded comparison results
+│   ├── comparison.md
+│   ├── netron_inspection.md
+│   ├── bit_width_analysis.md
+│   ├── *_float.tflite and *_quantized.tflite
+│   ├── *_history.csv
+│   ├── comparison.csv / comparison.json
+│   └── tflite_inspection.json
 ├── models/              # Locally generated Float32 model files
 ├── PROJECT_AIMS.md      # Detailed requirements, roadmap, and status
 ├── NOTES.md             # Experiment notes
@@ -152,25 +160,27 @@ Evaluate the Float32 and INT8 models:
 python src/evaluate.py
 ```
 
-The scripts create or use:
+The training and quantization scripts create or use these model paths. Float32 TFLite exports are included from the Kaggle run for the size comparison:
 
 ```text
 models/mobilenet_v1.keras
 models/mobilenet_v2.keras
+results/mobilenet_v1_float.tflite
+results/mobilenet_v2_float.tflite
 results/mobilenet_v1_quantized.tflite
 results/mobilenet_v2_quantized.tflite
 ```
 
-## Verification still to complete
+The final corrected Kaggle artifacts have been copied into these canonical paths. Keras model files are ignored by Git because of their size; the TFLite files and reports are included in the repository.
 
-The core implementation and initial experiment are present. Before calling the project a final submission, complete these checks:
+## Verification status
 
-- Re-run the full experiment from a clean environment.
-- Record the exact training configuration and random seeds.
-- Inspect both INT8 files in Netron and save the relevant observations.
-- Add a reproducible accumulator and required-bit-width calculation.
-- Confirm that the corrected architecture and its newly retrained artifacts match the intended MobileNet specifications.
-- Confirm the final dataset with the assignment supervisor.
+The corrected run has been retrained, evaluated, and inspected. One environment detail is still missing from the downloaded run metadata:
+
+- Record the Kaggle Python and TensorFlow versions if they are available from the notebook session metadata.
+- Record the Kaggle Python and TensorFlow versions if the notebook session metadata is available.
+
+When presenting, mention the overfitting visible in the histories and report measured accuracy rather than claiming 90%.
 
 The project does not include, and does not require, an FPGA implementation.
 
