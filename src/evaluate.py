@@ -47,7 +47,6 @@ def evaluate_tflite(tflite_path, x_test, y_test):
 if __name__ == "__main__":
     ROOT = Path(__file__).resolve().parent.parent
     MODELS_DIR = ROOT / "models"
-    RESULTS_DIR = ROOT / "results"
 
     (_, _), (_, _), (x_test, y_test) = load_data()
 
@@ -60,5 +59,5 @@ if __name__ == "__main__":
         loss, acc = evaluate_keras(MODELS_DIR / keras_file, test_ds)
         print(f"{name} Float32: loss={loss:.4f}, acc={acc:.4f}")
 
-        tflite_acc = evaluate_tflite(RESULTS_DIR / tflite_file, x_test, y_test)
+        tflite_acc = evaluate_tflite(MODELS_DIR / tflite_file, x_test, y_test)
         print(f"{name} INT8:   acc={tflite_acc:.4f}")

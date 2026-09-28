@@ -4,7 +4,6 @@ import tensorflow as tf
 
 ROOT = Path(__file__).resolve().parent.parent
 MODELS_DIR = ROOT / "models"
-RESULTS_DIR = ROOT / "results"
 
 
 def representative_dataset():
@@ -40,7 +39,7 @@ if __name__ == "__main__":
 
     for keras_name, tflite_name in models:
         model_path = MODELS_DIR / keras_name
-        tflite_path = RESULTS_DIR / tflite_name
+        tflite_path = MODELS_DIR / tflite_name
         print(f"Quantizing {keras_name}...")
         quantize_model(model_path, tflite_path, representative_dataset)
         print(f"  Saved to {tflite_path}")

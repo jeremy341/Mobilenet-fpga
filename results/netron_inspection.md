@@ -2,6 +2,8 @@
 
 Inspected in Netron on 2026-09-25. These models were trained with `alpha=0.5`, including the initial 3×3 convolution, which gives the stem 16 filters.
 
+The inspected files are `models/mobilenet_v1_quantized.tflite` and `models/mobilenet_v2_quantized.tflite`.
+
 ## MobileNetV1
 
 ```text

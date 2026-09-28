@@ -193,10 +193,10 @@ Comparable training settings
 Save and measure both Float32 models before quantization:
 
 ```text
-mobilenet_v1_float.keras
-mobilenet_v2_float.keras
-mobilenet_v1_float.tflite
-mobilenet_v2_float.tflite
+models/mobilenet_v1.keras
+models/mobilenet_v2.keras
+models/mobilenet_v1_float.tflite
+models/mobilenet_v2_float.tflite
 ```
 
 Record accuracy, parameter count, model size, and training settings.
@@ -232,8 +232,8 @@ Use a representative subset of real training images for calibration and force in
 Create:
 
 ```text
-mobilenet_v1_int8.tflite
-mobilenet_v2_int8.tflite
+models/mobilenet_v1_quantized.tflite
+models/mobilenet_v2_quantized.tflite
 ```
 
 Inspect them with the interpreter:
@@ -288,7 +288,7 @@ Based on the current repository contents:
 - [x] Float32 training scripts exist.
 - [x] Saved Float32 `.keras` models exist locally.
 - [x] Quantization code exists.
-- [x] Both quantized `.tflite` files exist locally.
+- [x] Both quantized `.tflite` files exist in the canonical `models/` folder.
 - [x] Actual TFLite inspection confirms INT8 model inputs and outputs, with INT8 and INT32 tensors present.
 - [x] Accuracy and model-size comparison results are documented.
 - [x] Both models were retrained on Kaggle with a maximum of 30 epochs, early stopping, and learning-rate reduction.
@@ -297,7 +297,7 @@ Based on the current repository contents:
 - [x] Corrected V1 and V2 INT8 artifacts were inspected in Netron and documented in `results/netron_inspection.md`.
 - [x] A reproducible theoretical bit-width calculation is recorded in `results/bit_width_analysis.md`.
 - [x] CIFAR-10 is confirmed as an allowed dataset.
-- [x] Corrected Keras, Float32 TFLite, and INT8 TFLite artifacts replace the older files in the canonical local folders.
+- [x] Corrected Keras, Float32 TFLite, and INT8 TFLite artifacts are organized in the canonical `models/` folder; the four TFLite exports are tracked in GitHub and Keras checkpoints remain local-only.
 - [x] Training settings, seed, histories, comparison metrics, Netron findings, bit-width calculations, and datatype inspection are documented.
 - [ ] Record Kaggle Python and TensorFlow version metadata if it can be retrieved from the notebook session.
 

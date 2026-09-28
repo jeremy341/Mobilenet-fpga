@@ -98,11 +98,13 @@ Detailed results are in [results/comparison.md](results/comparison.md), with [Ne
 │   ├── comparison.md
 │   ├── netron_inspection.md
 │   ├── bit_width_analysis.md
-│   ├── *_float.tflite and *_quantized.tflite
 │   ├── *_history.csv
 │   ├── comparison.csv / comparison.json
 │   └── tflite_inspection.json
-├── models/              # Locally generated Float32 model files
+├── models/
+│   ├── mobilenet_v1.keras / mobilenet_v2.keras  # Local training checkpoints
+│   ├── mobilenet_v1_float.tflite / mobilenet_v2_float.tflite
+│   └── mobilenet_v1_quantized.tflite / mobilenet_v2_quantized.tflite
 ├── PROJECT_AIMS.md      # Detailed requirements, roadmap, and status
 ├── NOTES.md             # Experiment notes
 ├── check_dataset.py     # Dataset-loading smoke test
@@ -110,7 +112,7 @@ Detailed results are in [results/comparison.md](results/comparison.md), with [Ne
 └── uv.lock              # Locked dependency versions
 ```
 
-Generated model files may be ignored by Git because of their size. They can be recreated using the commands below.
+The four TFLite exports are versioned in GitHub. The two `.keras` training checkpoints are local-only and can be recreated using the commands below.
 
 ## Setup
 
@@ -160,18 +162,18 @@ Evaluate the Float32 and INT8 models:
 python src/evaluate.py
 ```
 
-The training and quantization scripts create or use these model paths. Float32 TFLite exports are included from the Kaggle run for the size comparison:
+The training, quantization, and evaluation scripts use `models/` for all model artifacts:
 
 ```text
 models/mobilenet_v1.keras
 models/mobilenet_v2.keras
-results/mobilenet_v1_float.tflite
-results/mobilenet_v2_float.tflite
-results/mobilenet_v1_quantized.tflite
-results/mobilenet_v2_quantized.tflite
+models/mobilenet_v1_float.tflite
+models/mobilenet_v2_float.tflite
+models/mobilenet_v1_quantized.tflite
+models/mobilenet_v2_quantized.tflite
 ```
 
-The final corrected Kaggle artifacts have been copied into these canonical paths. Keras model files are ignored by Git because of their size; the TFLite files and reports are included in the repository.
+The final corrected Kaggle artifacts are stored in these canonical paths. The `.keras` checkpoints remain local-only; all four Float32/INT8 TFLite files are included in the repository.
 
 ## Verification status
 

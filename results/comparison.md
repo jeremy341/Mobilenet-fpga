@@ -1,5 +1,9 @@
 # Final corrected MobileNetV1 vs MobileNetV2 run
 
+## Model artifact locations
+
+All six model artifacts are organized under `models/`. The four versioned TFLite files are `models/mobilenet_v1_float.tflite`, `models/mobilenet_v1_quantized.tflite`, `models/mobilenet_v2_float.tflite`, and `models/mobilenet_v2_quantized.tflite`. The `.keras` training checkpoints are local-only.
+
 ## Run configuration
 
 - Dataset: CIFAR-10; 45,000 training, 5,000 validation, 10,000 test images
@@ -52,7 +56,7 @@ Output scale:      0.00390625
 Output zero-point: -128
 ```
 
-The first INT8 convolution filter in each corrected model has shape `[16,3,3,3]`, confirming that `alpha=0.5` is applied to the stem. The complete machine-readable inspection is in `tflite_inspection.json`; training histories and all Float32/INT8 models are stored alongside this report.
+The first INT8 convolution filter in each corrected model has shape `[16,3,3,3]`, confirming that `alpha=0.5` is applied to the stem. The complete machine-readable inspection is in `tflite_inspection.json`; training histories and comparison reports remain under `results/`, while model binaries are under `models/`.
 
 Netron reports 818,252 V1 and 578,652 V2 inference-graph parameters. Keras reports 834,666 and 604,234 training-model parameters; see [`netron_inspection.md`](netron_inspection.md) for the distinction.
 
